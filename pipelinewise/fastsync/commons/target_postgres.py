@@ -3,9 +3,12 @@ import psycopg2
 import psycopg2.extras
 import json
 import gzip
+import random
 from typing import List
 
 from . import utils
+from .fake_data.first_name import first_names
+from .fake_data.last_name import last_names
 
 LOGGER = logging.getLogger(__name__)
 
@@ -149,6 +152,7 @@ class FastSyncTargetPostgres:
         table_dict = utils.tablename_to_dict(table_name)
         target_table = table_dict.get('table_name') if not is_temporary else table_dict.get('temp_table_name')
         transformations = self.transformation_config.get('transformations', [])
+        LOGGER.info('transformations %s', json.dumps(transformations))
         trans_cols = []
 
         # Find obfuscation rule for the current table
@@ -165,7 +169,7 @@ class FastSyncTargetPostgres:
                 if transform_type == 'SET-NULL':
                     trans_cols.append('"{}" = NULL'.format(column))
                 elif transform_type == 'HASH':
-                    trans_cols.append('"{}" = ENCODE(DIGEST("{}", \'sha1\'), \'hex\')'.format(column, column))
+                    trans_cols.append('"{}" = ENCODE(DIGEST("{}"::TEXT, \'sha1\'), \'hex\')'.format(column, column))
                 elif 'HASH-SKIP-FIRST' in transform_type:
                     skip_first_n = transform_type[-1]
                     trans_cols.append('"{}" = CONCAT(SUBSTRING("{}", 1, {}),'
@@ -179,6 +183,18 @@ class FastSyncTargetPostgres:
                     trans_cols.append('"{}" = TO_CHAR("{}"::DATE, \'YYYY-01-01\')::DATE'.format(column, column))
                 elif transform_type == 'MASK-NUMBER':
                     trans_cols.append('"{}" = 0'.format(column))
+                elif transform_type == 'MASK-HIDDEN':
+                    trans_cols.append('"{}" = \'hidden\''.format(column))
+                elif transform_type == 'FAKE-FIRST-NAME':
+                    trans_cols.append('"{}" = anonymize.fake_first_name()'.format(column))
+                elif transform_type == 'FAKE-LAST-NAME':
+                    trans_cols.append('"{}" = anonymize.fake_last_name()'.format(column))
+                elif transform_type == 'FAKE-MIDDLE-NAME':
+                    trans_cols.append('"{}" = anonymize.fake_middle_name()'.format(column))
+                elif transform_type == 'CONCAT-FIELD-ID':
+                    trans_cols.append('"{}" = CONCAT(\'{}\', id)'.format(column, column))
+                elif transform_type == 'RANDOM-PHONE':
+                    trans_cols.append('"{}" = anonymize.random_phone()'.format(column))
 
         # Generate and run UPDATE if at least one obfuscation rule found
         if len(trans_cols) > 0:

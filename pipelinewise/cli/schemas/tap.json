@@ -104,7 +104,9 @@
             "HASH-SKIP-FIRST-9",
             "MASK-DATE",
             "MASK-NUMBER",
-            "MASK-HIDDEN"
+            "MASK-HIDDEN",
+            "FAKE-FIRST-NAME",
+            "FAKE-LAST-NAME"
           ]
         }
       },

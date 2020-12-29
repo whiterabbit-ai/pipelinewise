@@ -876,6 +876,7 @@ class PipelineWise:
         """
         Generating and running shell command to sync tables using the native fastsync components
         """
+        self.logger.info('LOG 2- {}'.format(json.dumps(transform)))
         # Build the fastsync executable command
         command = commands.build_fastsync_command(tap=tap,
                                                   target=target,
@@ -954,6 +955,8 @@ class PipelineWise:
         tap_state = self.tap['files']['state']
         tap_transformation = self.tap['files']['transformation']
         target_config = self.target['files']['config']
+
+        self.logger.info('LOG 1- {}'.format(json.dumps(tap_transformation)))
 
         # Some target attributes can be passed and override by tap (aka. inheritable config)
         # We merge the two configs and use that with the target
@@ -1135,6 +1138,8 @@ class PipelineWise:
         tap_state = self.tap['files']['state']
         tap_transformation = self.tap['files']['transformation']
         target_config = self.target['files']['config']
+
+        self.logger.info('LOG 3- {}'.format(json.dumps(tap_transformation)))
 
         # Some target attributes can be passed and override by tap (aka. inheritable config)
         # We merge the two configs and use that with the target

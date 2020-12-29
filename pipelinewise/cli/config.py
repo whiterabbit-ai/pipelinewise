@@ -271,6 +271,8 @@ class Config:
                 }))
         tap_selection = {'selection': selection}
 
+        self.logger.info("table.get('transformations', []) %s", table.get('transformations', []))
+
         # Generate tap transformation
         transformations = []
         for schema in tap.get('schemas', []):
@@ -290,6 +292,8 @@ class Config:
         tap_transformation = {
             'transformations': transformations
         }
+
+        self.logger.info("tap_transformation %s", tap_transformation)
 
         # Generate stream to schema mapping
         schema_mapping = {}
